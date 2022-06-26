@@ -1,0 +1,88 @@
+;; a way to panic at a specific point
+let crash x =
+    prelude_print "----meant to crash----"
+    prelude_throw x
+
+;; need to handle the following:
+;; i could just disallow shadowing functions that are in the same scope i guess..
+;; let crash x = crash x
+
+let x `??` y = call (prelude_if (prelude_eq x ()) y x)
+
+;; assert not unit
+;; TODO: handle comments in fn blocks, should be enough to just check if line is empty basically
+;; turn fn arg to variable that the fn can reference
+let x `?!` y =
+    let _y = y
+    let explode a _ = prelude_throw a
+    call (prelude_if (prelude_eq x ()) (explode _y) x)
+
+let x `+` y = prelude_add x y
+let x `-` y = prelude_sub x y
+let x `==` y = prelude_eq x y
+let x `!=` y = prelude_eq (prelude_eq x y) false
+let x `|>` y = y x
+let x `<|` y = x y
+;;let x `>>` y =
+;;    
+;;    let new_fn a b c = b (a c)
+;;
+;;    let _x = x
+;;    let _y = y
+;;
+;;    let combined = new_fn _x _y
+;;    combined
+
+
+let println x = prelude_print x
+let call fn = fn ()
+let if cond then else = call (prelude_if (prelude_eq cond true) then else)
+let x `&&` y = call (prelude_if (call (prelude_if (prelude_eq x true) true false)) (call (prelude_if (prelude_eq y true) true false)) false)
+let x `||` y = call (prelude_if (call (prelude_if (prelude_eq x true) true false)) true (call (prelude_if (prelude_eq y true) true false)))
+
+
+
+;; ideas that probably aren't going to be implemented because i changed my mind after a while ;;
+;;global let `()` = prelude_unit
+;;global let `//` $ = ()
+;;// 'let `//` $' means that when parsing we hand over everything after '//' as an implicit string
+;;// example: define ++ prefix operator to add all following args together
+;;// let `++` ... =
+;;//   let args = ...
+;;//   let max = prelude_array_length args
+;;//   let full = prelude_array_get 0 args
+;;//   let cur = 1
+;;//   // if cur >= max don't even start loop, just return
+;;//   prelude_return_if (prelude_cond cur max prelude_ge) full
+;;//   // define loop label
+;;//   prelude_label loop
+;;//   full = full + prelude_array_get cur args
+;;//   cur = cur + 1
+;;//   // goto loop label if cur < max
+;;//   prelude_goto_if (prelude_cond cur max prelude_lt) loop
+;;//   full
+;;// TODO: optimization for empty functions? just replace them with unit, i.e. () when compiling?
+;;   (an empty function would be one that is basically just an alias to another function)
+;;
+;;global let x `+` y = prelude_add x y
+;;global let x `-` y = prelude_sub x y
+;;global let x `*` y = prelude_mul x y
+;;global let x `/` y = prelude_div x y
+;;global let x `>=` y = prelude_cond x y prelude_ge
+;;
+;;
+;;
+;;// test.lett later when more stuff is implemented:
+;;let `@` x = x
+;;let x = 1
+;;prelude_print (@ x)
+;;
+;;let id x = x
+;;let id2 x=x
+;;let y = 1
+;;let x = 2
+;;prelude_print (id y)
+;;prelude_print (id2 y)
+;;prelude_print (id x)
+;;prelude_print (id2 x)
+;;

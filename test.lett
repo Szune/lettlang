@@ -1,0 +1,179 @@
+let x `😥` y = prelude_throw "intentionally threw"
+"oh" 😥 "no"
+
+;;let add10 x = x + 10
+;;let add25 x = x + 25
+;;let add35 = add10 >> add25
+;;let result_of_add35 = add35 5
+;;println result_of_add35
+;;crash "yup!"
+
+let starts_as_unit = ()
+println ("starts_as_unit = " + starts_as_unit)
+let starts_as_unit = starts_as_unit ?? "now it has a value"
+println ("starts_as_unit = " + starts_as_unit)
+let starts_as_unit = starts_as_unit ?? "should be the same as before"
+println ("starts_as_unit (should be unchanged) = " + starts_as_unit)
+
+let if_unit_then_crash = ()
+println ("if_unit_then_crash = " + if_unit_then_crash)
+println "trying the ?! op"
+(if_unit_then_crash ?! "if_unit_then_crash was unit :(")
+println ("did not crash!")
+
+crash "see if unit-coalescing works"
+println (
+    let oh = "oh no"
+    let crow = "oh crow"
+    oh + " " + crow
+)
+
+let result_of_if = if (1 == 1) ("it's true") ("it's a rude lie")
+println ("result of if: " + result_of_if)
+
+let result_of_if_with_block = if (1 == 1) (
+    if true ("it's still true") ("it's false but that's wrong")
+) (
+    "it's a rude lie"
+)
+println ("result of if with blocks: " + result_of_if_with_block)
+
+;; test if as well as `&&`
+if (("hello world" == "hello world") && (1 == 1)) (let (then) =
+    println "inside true block &&"
+) (let (else) =
+    println "inside false block &&"
+)
+
+;; test ==
+println ("1 == 1 -> " + (1 == 1))
+println ("1 == 2 -> " + (1 == 2))
+
+;; test !=
+println ("1 != 1 -> " + (1 != 1))
+println ("1 != 2 -> " + (1 != 2))
+
+;; test if as well as `||`
+if (("hello world" == "hello world") || (1 == 1)) (let (then) =
+    println "inside true block ||"
+) (let (else) =
+    println "inside false block ||"
+)
+
+("oh no crow oh") |> println
+
+;; anonymous function, assigned to variable anon_1:
+let anon_1 = let () = 10 + 1
+let anon_1_result = anon_1 ()
+println anon_1_result
+let anon_2 = let (arg1 arg2) = arg1 + arg2
+let anon_2_result = anon_2 1 2
+println anon_2_result
+
+let full x y z = x + y + z
+let partial = full 3 4
+
+println ("calling a partial returned " + (partial 8))
+println (call (let () =
+    let p1 = "string returned from anonymous function"
+    let p2 = p1 + " as part of a block expr"
+    p2
+))
+println (call (let () = "string returned from anonymous function"))
+println (() |> let () = "string returned from anonymous function called by pipe")
+println ("piped arg" |> let (x) = "string returned from anonymous function with " + x)
+
+let anon_3 () = "anon_3 is a function without args that returned this"
+anon_3 () |> println
+
+let add x y = prelude_add x y
+let sub x y = prelude_sub x y
+
+(19 - 7) |> println
+
+("1 + 2 + 4 should be 7, was " + (1 + 2 + 4)) |> println
+
+let add1 = add 1
+
+;; 2
+1 |> add1 |> println
+;; 4
+1 |> add1 |> add1 |> add1 |> println
+;; 3
+println <| (add1 <| (add1 <| 1))
+
+;; implemented:
+(137591357 + " was printed with forward piping, cool") |> println
+println <| (137591357 + " was printed with backward piping, cool")
+" was printed with piping, cool" |> add 1357 |> println
+add 1357 " was printed with piping, cool" |> println
+
+let added_num = 10 + 5
+println added_num
+added_num + 15
+
+println ("10+5+15=" + (added_num + 15))
+
+let print_add x y =
+    let z = x + y
+
+
+
+
+    println z
+let x `{+}` y =
+    let res = x + y
+    let str = (x + " + " + y + " = ") + res
+    println str
+    res
+
+let y = 1
+let x = 2
+println x
+println y
+let z = add ("maybe " + (add ("x = " + x + ", y = " + y + ", x + y -> ") (x + y))) " was the result"
+println "hello sadness my new friendy"
+println z
+;; print_add and {+} operator leave Unit on the stack
+;;print_add x "oka"
+println (add "eh" (add "oki" "hi"))
+"hi" |> add "oki" |> add "eh" |> println
+add 15 1
+
+
+let result = 11 {+} 1
+result
+;; `|>` needs functions with partial application to work
+;; which requires functions as values to work
+;; which requires anonymous functions (which is how i'll implement partial application)
+;; the difficult part is probably going to be parsing
+;; i think i could implement it as follows:
+;; parser keeps track of available functions (like it does function args [fn_context_stack], in a stack),
+;; to determine if the arg is a func, arg reference or local/global reference
+;; if it's a func, take as many args as you are given up until either ')' or an operator
+;; and turn it into an AstFunctionReference { Function::Value [if no args given] or Function::PartiallyApplied [if some args given]}
+;; if _all_ args are given, then just turn it into an AstCallFunction
+;; later on, perform the optimization where you're giving a function an alias, e.g.
+;; let println = prelude_print
+;; after that, calls to println should be inlined to prelude_print
+;; that could be done by the parser, using the fn table that partial application will use
+;; and just straight up parsing "println x" as "prelude_print x"
+;;15 |> println
+
+
+;;let header title =
+;;    "<head><title>" + title + "</title></head>"
+;;
+;;let body content =
+;;    "<body>" + content + "</body>"
+;;
+;;let html part =
+;;    "<html>" + part + "</html>"
+;;    
+;;
+;;let page title content =
+;;    html ((header title) + (body content))
+;;
+;;page "blog part 1" "so there's a thing i've been doing yeah?" |> println
+;;
+;;crash "trying something.. remove everything up to this point afterwards :)"
